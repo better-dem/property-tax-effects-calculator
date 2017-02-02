@@ -13,8 +13,8 @@ public class CalculateEffects
 
         NondominatedPopulation result = new Executor()
                 .withProblemClass(CurrentStateInferenceProblem.class)
-                .withAlgorithm("GDE3")
-                .withMaxEvaluations(10000)
+                .withAlgorithm("BDNCustom")
+                .withMaxEvaluations(100000)
                 .distributeOnAllCores()
                 .run();
 
@@ -23,12 +23,11 @@ public class CalculateEffects
 
 
         // best overall
-        System.out.println("best overall result (unweighted sum):");
         double minScore = 10E20;
         Solution bestOverall = null;
         for (Solution solution : result) {
             double overallScore = 0;
-            for (int i = 0; i < CurrentStateModel.number_of_objectives; i++) {
+            for (int i = 0; i < CurrentStateModel.NUM_OBJECTIVES; i++) {
                 overallScore += solution.getObjective(i);
             }
             if (overallScore < minScore){
@@ -36,6 +35,9 @@ public class CalculateEffects
                 minScore = overallScore;
             }
         }
+
+        System.out.println("best overall result (unweighted sum):");
+        System.out.println(minScore);
 
         double[] individual = EncodingUtils.getReal(bestOverall);
         CurrentStateModel model = CurrentStateModel.decodeFromIndividual(individual);

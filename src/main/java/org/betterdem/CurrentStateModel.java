@@ -15,7 +15,7 @@ import static org.betterdem.CurrentStateModel.Household.NUM_HOUSEHOLD_FIELDS;
  * Created by David Cohen on 2/1/17.
  */
 public class CurrentStateModel {
-    public static final int population = 10;
+    public static final int POPULATION = 100;
 
     public static class Household {
         public static final int NUM_HOUSEHOLD_FIELDS=3;
@@ -165,8 +165,7 @@ public class CurrentStateModel {
         renterMonthlyCosts = new HistogramComparator(sortedBinBoundaries, binWeights);
     }
 
-
-    public static int number_of_objectives = 5;
+    public static int NUM_OBJECTIVES = 5;
     double[] evaluateConstraints(){
         /*
         * This function scores how well a current state model meets the required constraints

@@ -47,6 +47,8 @@ public class HistogramComparator {
     }
 
     public double distance(List<Double> dataset){
+        if (dataset.size() == 0)
+            return 0.0;
         final Map<Integer, Integer> binCounter = new HashMap<>();
         dataset.forEach(x -> binCounter.put(getBin(x), binCounter.getOrDefault(getBin(x), 0) + 1));
         return binCounter.keySet().stream().
