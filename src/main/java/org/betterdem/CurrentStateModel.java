@@ -18,30 +18,30 @@ public class CurrentStateModel {
     public static final int population = 10;
 
     public static class Household {
-        public static final int NUM_HOUSEHOLD_FIELDS=1;
+        public static final int NUM_HOUSEHOLD_FIELDS=3;
 
         public Household(List<Double> householdFields){
             if (householdFields.size() != NUM_HOUSEHOLD_FIELDS){
                 throw new Error("Incorrect number of fields used to create a household object model ("+householdFields.size()+")");
             }
             annualIncome = householdFields.get(0);
-//            housingCostsBeforePropertyTax = householdFields.get(1);
-//            householdType = householdFields.get(2); // Note, this is reinterpreted as one of {rent, own, mortgage}
+            housingCosts = householdFields.get(1);
+            householdType = householdFields.get(2); // Note, this is reinterpreted as one of {rent, own, mortgage}
 //            homeValue = householdFields.get(3);
         }
 
         List<Double> getListRepr(){
             List<Double> ans = new LinkedList<Double>();
             ans.add(annualIncome);
-//            ans.add(housingCostsBeforePropertyTax);
-//            ans.add(householdType);
+            ans.add(housingCosts);
+            ans.add(householdType);
 //            ans.add(homeValue);
             return ans;
         }
 
         double annualIncome;
-//        double housingCostsBeforePropertyTax;
-//        double householdType;
+        double housingCosts;
+        double householdType;
 //        double homeValue;
     }
 
@@ -51,7 +51,7 @@ public class CurrentStateModel {
         } else if (i % NUM_HOUSEHOLD_FIELDS == 1){
             return new double[] {0.0, 10000000};
         } else if (i % NUM_HOUSEHOLD_FIELDS == 2){
-            return new double[] {-10.0, 10.0};
+            return new double[] {0.0, 3.0};
         } else if (i % NUM_HOUSEHOLD_FIELDS == 3){
             return new double[] {0.0, 10000000};
         }
@@ -59,9 +59,12 @@ public class CurrentStateModel {
     }
 
     List<Household> households;
-    int numHouseholds;
 
-    static HistogramComparator householdIncomesCensusComparator;
+    static HistogramComparator householdIncomesCensus;
+    static HistogramComparator householdTypes;
+    static HistogramComparator mortgagedHomeMonthlyCosts;
+    static HistogramComparator noMortgageHomeMonthlyCosts;
+    static HistogramComparator renterMonthlyCosts;
     static {
         //// Constraint 0: distance between distribution of household incomes in the model, and the distribution in the census
         // data from here: https://factfinder.census.gov/bkmk/table/1.0/en/ACS/15_5YR/DP03/1600000US5343150
@@ -88,10 +91,82 @@ public class CurrentStateModel {
                 0.306,
                 0.108,
                 0.09);
-        householdIncomesCensusComparator = new HistogramComparator(sortedBinBoundaries, binWeights);
+        householdIncomesCensus = new HistogramComparator(sortedBinBoundaries, binWeights);
+
+        //// Constraint 1: similarity of household types distribution to census
+        // data from here: https://factfinder.census.gov/bkmk/table/1.0/en/ACS/15_5YR/DP04/1600000US5343150
+        sortedBinBoundaries = Arrays.asList(
+                0.0, // rent
+                1.0,  // mortgage
+                2.0,   // own
+                3.0);
+        binWeights = Arrays.asList(
+                0.16418,
+                0.72585,
+                0.10997);
+        householdTypes = new HistogramComparator(sortedBinBoundaries, binWeights);
+
+
+        //// Constraint 2: distance between distribution of monthly costs given homeowner status
+        // data from here: https://factfinder.census.gov/bkmk/table/1.0/en/ACS/15_5YR/DP04/1600000US5343150
+        sortedBinBoundaries = Arrays.asList(
+                0.0,
+                500.0,
+                1000.0,
+                1500.0,
+                2000.0,
+                2500.0,
+                3000.0,
+                10000000.0); // assuming nobody in Maple Valley has greater than $10M monthly owner costs
+        binWeights = Arrays.asList(
+                0.009,
+                0.027,
+                0.12,
+                0.276,
+                0.336,
+                0.145,
+                0.087);
+        mortgagedHomeMonthlyCosts = new HistogramComparator(sortedBinBoundaries, binWeights);
+
+        sortedBinBoundaries = Arrays.asList(
+                0.0,
+                250.0,
+                400.0,
+                600.0,
+                800.0,
+                1000.0,
+                100000.0);
+        binWeights = Arrays.asList(
+                0.037,
+                0.064,
+                0.428,
+                0.307,
+                0.077,
+                0.087);
+        noMortgageHomeMonthlyCosts = new HistogramComparator(sortedBinBoundaries, binWeights);
+
+        sortedBinBoundaries = Arrays.asList(
+                0.0,
+                500.0,
+                1000.0,
+                1500.0,
+                2000.0,
+                2500.0,
+                3000.0,
+                100000.0);
+        binWeights = Arrays.asList(
+                0.055,
+                0.105,
+                0.271,
+                0.244,
+                0.29,
+                0.029,
+                0.07);
+        renterMonthlyCosts = new HistogramComparator(sortedBinBoundaries, binWeights);
     }
 
 
+    public static int number_of_objectives = 5;
     double[] evaluateConstraints(){
         /*
         * This function scores how well a current state model meets the required constraints
@@ -101,11 +176,39 @@ public class CurrentStateModel {
         * */
         List<Double> scores = new ArrayList<Double>();
         //// Constraint 0: distance between distribution of household incomes in the model, and the distribution in the census
-        scores.add(householdIncomesCensusComparator.distance(
+        scores.add(householdIncomesCensus.distance(
                 households.stream().map(x -> x.annualIncome).collect(Collectors.toList())
         ));
 
-        return Doubles.toArray(scores);
+        //// Constraint 1: similarity of household types distribution to census
+        scores.add(householdTypes.distance(
+                households.stream().map(x -> x.householdType).collect(Collectors.toList())
+        ));
+
+        //// Constraints 2-4: distance between distribution of monthly costs given homeowner status
+        scores.add(renterMonthlyCosts.distance(
+                households.stream().
+                        filter(x -> x.householdType >= 0.0  && x.householdType <= 1.0).
+                        map(x -> x.housingCosts).collect(Collectors.toList())
+        ));
+
+        scores.add(mortgagedHomeMonthlyCosts.distance(
+                households.stream().
+                        filter(x -> x.householdType > 1.0  && x.householdType <= 2.0).
+                        map(x -> x.housingCosts).collect(Collectors.toList())
+        ));
+
+        scores.add(noMortgageHomeMonthlyCosts.distance(
+                households.stream().
+                        filter(x -> x.householdType > 2.0  && x.householdType <= 3.0).
+                        map(x -> x.housingCosts).collect(Collectors.toList())
+        ));
+
+         return Doubles.toArray(scores);
+        // to simplify the optimization problem, sum all the objectives
+//        double ans = scores.stream().mapToDouble(Double::doubleValue).sum();
+//        return new double[] {ans};
+
     }
 
     public CurrentStateModel() {
