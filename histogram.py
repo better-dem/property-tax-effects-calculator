@@ -20,6 +20,17 @@ class Histogram:
                 return i
         return len(self.sorted_bin_boundaries)
 
+    def get_prob(self, x):
+        """
+        return pdf(x)
+        """
+        b = self.get_bin(x)
+        if b == 0 or b == len(self.sorted_bin_boundaries):
+            return 0.0
+        l = self.sorted_bin_boundaries[b-1]
+        u = self.sorted_bin_boundaries[b]
+        return self.bin_weights[b-1] / (u-l)
+
     def gen_sample(self):
         x = r.random()
         for i, w in enumerate(self.bin_weights):

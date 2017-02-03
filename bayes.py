@@ -23,10 +23,10 @@ class BayesianNetwork:
         ans = []
         while not len(remaining) == 0:
             for i in remaining:
-                if all(i.parents in ans):
+                if all([x in ans for x in i.parents]):
                     next_var = i
                     break
-            ans.add(next_var)
+            ans.append(next_var)
             remaining.remove(next_var)
         return ans
 
