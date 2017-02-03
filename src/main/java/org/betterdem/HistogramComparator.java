@@ -25,9 +25,9 @@ public class HistogramComparator {
             throw new Error("Incorrect number of bin weights for the given set of boundaries");
         }
 
-        if (Math.abs(binWeights.stream().mapToDouble(Double::doubleValue).sum() - 1) > 1.0E-2){
-            new Exception("bin weights don't sum to 1").printStackTrace();
-        }
+//        if (Math.abs(binWeights.stream().mapToDouble(Double::doubleValue).sum() - 1) > 1.0E-2){
+//            new Exception("bin weights don't sum to 1").printStackTrace();
+//        }
 
         //// todo: more validity checks
 
@@ -52,8 +52,7 @@ public class HistogramComparator {
         final Map<Integer, Integer> binCounter = new HashMap<>();
         dataset.forEach(x -> binCounter.put(getBin(x), binCounter.getOrDefault(getBin(x), 0) + 1));
         return binCounter.keySet().stream().
-                map(i -> Math.pow((1.0*binCounter.get(i)/dataset.size()) - binWeights.get(i), 2)).
+                map(i -> Math.abs((1.0*binCounter.get(i)/dataset.size()) - binWeights.get(i))).
                 mapToDouble(Double::doubleValue).sum() / dataset.size();
     }
-
 }

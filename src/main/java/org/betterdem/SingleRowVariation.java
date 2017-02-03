@@ -9,6 +9,15 @@ import org.moeaframework.core.variable.RealVariable;
  * Created by David Cohen on 2/2/17.
  */
 public class SingleRowVariation implements Variation {
+    private int population;
+
+    public SingleRowVariation(int population) {
+        this.population = population;
+    }
+
+    private int currentRow = 0;
+    private int remainingAttemptsAtCurrentRow = 100;
+
     @Override
     public int getArity() {
         return 1;
@@ -17,13 +26,21 @@ public class SingleRowVariation implements Variation {
     @Override
     public Solution[] evolve(Solution[] solutions) {
         Solution result = solutions[0].copy();
-        int rowToVary = PRNG.nextInt(0, CurrentStateModel.POPULATION-1); // bizarrely, nextInt is INCLUSIVE of the 'max' index
         int rowSize = CurrentStateModel.Household.NUM_HOUSEHOLD_FIELDS;
 
+        int rowToVary = currentRow;
+        if (remainingAttemptsAtCurrentRow <= 0) {
+            currentRow = (currentRow + 1) % population;
+            rowToVary = currentRow;
+            remainingAttemptsAtCurrentRow = 100;
+        } else {
+            remainingAttemptsAtCurrentRow -= 1;
+        }
+
         for (int i = 0; i < rowSize; i++) {
-            RealVariable v = (RealVariable)result.getVariable(i + rowToVary*rowSize);
+            RealVariable v = (RealVariable) result.getVariable(i + rowToVary * rowSize);
             double variableScale = v.getUpperBound() - v.getLowerBound();
-            double newV = PRNG.nextGaussian(v.getValue(), variableScale / 4);
+            double newV = PRNG.nextGaussian(v.getValue(), variableScale / 10);
             if (newV < v.getLowerBound()) {
                 newV = v.getLowerBound();
             }
@@ -33,6 +50,7 @@ public class SingleRowVariation implements Variation {
             v.setValue(newV);
         }
 
-        return new Solution[] {result};
+
+        return new Solution[]{result};
     }
 }

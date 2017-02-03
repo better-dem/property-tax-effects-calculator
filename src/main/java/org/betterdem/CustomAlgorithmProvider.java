@@ -3,10 +3,8 @@ package org.betterdem;
 import org.moeaframework.algorithm.NSGAII;
 import org.moeaframework.core.*;
 import org.moeaframework.core.comparator.ParetoDominanceComparator;
-import org.moeaframework.core.operator.CompoundVariation;
 import org.moeaframework.core.operator.RandomInitialization;
 import org.moeaframework.core.operator.TournamentSelection;
-import org.moeaframework.core.operator.TwoPointCrossover;
 import org.moeaframework.core.spi.AlgorithmProvider;
 import org.moeaframework.util.TypedProperties;
 
@@ -32,7 +30,7 @@ public class CustomAlgorithmProvider extends AlgorithmProvider {
                     new NondominatedSortingPopulation(),
                     new EpsilonBoxDominanceArchive(0.01),
                     new TournamentSelection(2, new ParetoDominanceComparator()),
-                    new CompoundVariation(new TwoPointCrossover(1.0), new SingleRowVariation()),
+                    new SingleRowVariation(typedProperties.getInt("numHouseholds", 10)),
                     initialization);
         } else {
             // return null if the user requested a different algorithm

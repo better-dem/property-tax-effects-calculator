@@ -15,8 +15,6 @@ import static org.betterdem.CurrentStateModel.Household.NUM_HOUSEHOLD_FIELDS;
  * Created by David Cohen on 2/1/17.
  */
 public class CurrentStateModel {
-    public static final int POPULATION = 100;
-
     public static class Household {
         public static final int NUM_HOUSEHOLD_FIELDS=3;
 
@@ -117,7 +115,7 @@ public class CurrentStateModel {
                 2000.0,
                 2500.0,
                 3000.0,
-                10000000.0); // assuming nobody in Maple Valley has greater than $10M monthly owner costs
+                30000.0); // assuming nobody in Maple Valley has greater than $10M monthly owner costs
         binWeights = Arrays.asList(
                 0.009,
                 0.027,
@@ -135,7 +133,7 @@ public class CurrentStateModel {
                 600.0,
                 800.0,
                 1000.0,
-                100000.0);
+                10000.0);
         binWeights = Arrays.asList(
                 0.037,
                 0.064,
@@ -153,7 +151,7 @@ public class CurrentStateModel {
                 2000.0,
                 2500.0,
                 3000.0,
-                100000.0);
+                30000.0);
         binWeights = Arrays.asList(
                 0.055,
                 0.105,
@@ -175,12 +173,12 @@ public class CurrentStateModel {
         * */
         List<Double> scores = new ArrayList<Double>();
         //// Constraint 0: distance between distribution of household incomes in the model, and the distribution in the census
-        scores.add(householdIncomesCensus.distance(
+        scores.add(2*householdIncomesCensus.distance(
                 households.stream().map(x -> x.annualIncome).collect(Collectors.toList())
         ));
 
         //// Constraint 1: similarity of household types distribution to census
-        scores.add(householdTypes.distance(
+        scores.add(2*householdTypes.distance(
                 households.stream().map(x -> x.householdType).collect(Collectors.toList())
         ));
 

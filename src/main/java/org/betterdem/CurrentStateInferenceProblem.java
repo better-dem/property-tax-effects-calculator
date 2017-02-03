@@ -10,7 +10,7 @@ import org.moeaframework.problem.AbstractProblem;
  */
 public class CurrentStateInferenceProblem extends AbstractProblem {
     public CurrentStateInferenceProblem() {
-        super(CurrentStateModel.POPULATION *CurrentStateModel.Household.NUM_HOUSEHOLD_FIELDS, CurrentStateModel.NUM_OBJECTIVES);
+        super(GrowingPopulationOptimizer.newPopulationSize * CurrentStateModel.Household.NUM_HOUSEHOLD_FIELDS, CurrentStateModel.NUM_OBJECTIVES);
     }
 
     @Override
