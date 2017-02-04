@@ -1,6 +1,6 @@
 # maple_valley_prop_1.py
 ### Data sources:
-# https://factfinder.census.gov/bkmk/table/1.0/en/ACS/15_5YR/DP03/1600000US5343151
+# https://factfinder.census.gov/bkmk/table/1.0/en/ACS/15_5YR/DP03/1600000US5343150
 # https://factfinder.census.gov/bkmk/table/1.0/en/ACS/15_5YR/DP04/1600000US5343150
 # http://www.maplevalleywa.gov/home/showdocument?id=7826
 
@@ -44,17 +44,17 @@ property_tax_2015_amount = bayes.Variable("property_tax_amount", [house_value, h
 
 # housing costs given household type distribution
 # mortgage
-bin_boundaries = [0.0, 500.0, 1000.0, 1500.0, 2000.0, 2500.0, 3000.0, 30000.0]
+bin_boundaries = [x*12 for x in [0.0, 500.0, 1000.0, 1500.0, 2000.0, 2500.0, 3000.0, 30000.0]]
 bin_weights = [0.009, 0.027, 0.12, 0.276, 0.336, 0.145, 0.087]
 h1 = h.Histogram(bin_boundaries, bin_weights)
 
 # no mortgage
-bin_boundaries = [0.0, 250.0, 400.0, 600.0, 800.0, 1000.0, 10000.0]
+bin_boundaries = [x*12 for x in [0.0, 250.0, 400.0, 600.0, 800.0, 1000.0, 10000.0]]
 bin_weights = [0.037, 0.064, 0.428, 0.307, 0.077, 0.087]
 h2 = h.Histogram(bin_boundaries, bin_weights)
 
 # rent
-bin_boundaries = [0.0, 500.0, 1000.0, 1500.0, 2000.0, 2500.0, 3000.0, 30000.0]
+bin_boundaries = [x*12 for x in [0.0, 500.0, 1000.0, 1500.0, 2000.0, 2500.0, 3000.0, 30000.0]]
 bin_weights = [0.055, 0.105, 0.271, 0.244, 0.29, 0.029, 0.07] 
 h3 = h.Histogram(bin_boundaries, bin_weights)
 
