@@ -107,12 +107,6 @@ def get_CPI(par):
 housing_cost_percentage_of_income = bayes.Variable("selected_housing_costs_as_a_percentage_of_income", [household_income, housing_costs, household_type], get_CPI, False, get_CPI_acceptance)
 
 
-
-
-
-
-
-
 BN = bayes.BayesianNetwork([household_income, household_type, house_value, property_tax_2015_amount, housing_costs, housing_cost_percentage_of_income])
 
 S = sampling.MetropolisSampler(BN)
@@ -127,3 +121,25 @@ for i in range(10):
 print "total property tax collected:", sum([x["property_tax_amount"] for x in population])
 print "(should be about $3.5M)"
 
+def get_home_type_string(individual):
+    if individual["household_type"] < 1:
+        return "rent"
+    if individual["household_type"] < 2:
+        return "mortgage"
+    else:
+        return "own"
+
+def update_for_prop_1_and_output(population):
+    keys = sorted(population[0].keys())
+    print ",".join(["vote", "home_type", "selected_housing_costs_as_a_percentage_of_income"])
+    for individual in population:
+        htype = get_home_type_string(individual)
+        n_row = ["no", htype, str(individual["selected_housing_costs_as_a_percentage_of_income"])]
+        additional_tax_as_percentage_income = 0
+        if not htype == "rent":
+            additional_tax_as_percentage_income = 100 * (.35/1000 * individual["home_value_if_owner"]) / individual["household_income"]
+        y_row = ["yes", htype, str(individual["selected_housing_costs_as_a_percentage_of_income"] + additional_tax_as_percentage_income)]
+        print ",".join(n_row)
+        print ",".join(y_row)
+
+# update_for_prop_1_and_output(population)
