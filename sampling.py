@@ -4,6 +4,8 @@ import random as r
 import sys
 import numpy as np
 
+stdev_fraction = 1.0/30
+
 class MetropolisSampler:
     def __init__(self, bayes_net):
         self.bayes_net = bayes_net

@@ -2,6 +2,7 @@
 # class for generating samples and getting pdf of a value given a histogram
 
 import random as r
+import sampling
 
 class Histogram:
     def __init__(self, sorted_bin_boundaries, bin_weights):
@@ -21,7 +22,7 @@ class Histogram:
         """
         l = self.sorted_bin_boundaries[0]
         u = self.sorted_bin_boundaries[-1]
-        stdev = (l-u)/15.0
+        stdev = (l-u) * sampling.stdev_fraction
         return r.gauss(prev, stdev)
 
     def gen_unif_sample(self):

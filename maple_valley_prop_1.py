@@ -84,7 +84,7 @@ h3 = h.Histogram(bin_boundaries, bin_weights)
 def random_walk_housing_cost(par, prev):
     l = min([h1.sorted_bin_boundaries[0], h2.sorted_bin_boundaries[0], h3.sorted_bin_boundaries[0]])
     u = max([h1.sorted_bin_boundaries[-1], h2.sorted_bin_boundaries[-1], h3.sorted_bin_boundaries[-1]])
-    stdev = (l-u)/15
+    stdev = (l-u) * sampling.stdev_fraction
     return r.gauss(prev, stdev)
 
 def get_housing_cost_acceptance(par, gen):
@@ -167,7 +167,7 @@ def update_for_prop_1_and_output(population):
             additional_tax_as_percentage_income = 100 * additional_tax / individual["household_income"]
         n_row = ["no", htype, str(round( individual["selected_housing_costs"]/1000, 3)), str(round(individual["selected_housing_costs_as_a_percentage_of_income"], 2))]
         y_row = ["yes", htype, str(round( (individual["selected_housing_costs"]+additional_tax)/1000, 3)), str(round(individual["selected_housing_costs_as_a_percentage_of_income"] + additional_tax_as_percentage_income, 2))]
-        print ",".join(n_row)
-        print ",".join(y_row)
+        # print ",".join(n_row)
+        # print ",".join(y_row)
 
 update_for_prop_1_and_output(population)
