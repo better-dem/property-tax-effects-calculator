@@ -9,6 +9,8 @@ import bayes
 import histogram as h
 from collections import Counter as C
 import random as r
+import numpy as np
+from scipy import stats
 
 def indicator(b):
     if b:
@@ -136,10 +138,26 @@ def get_CPI(par, prev):
 housing_cost_percentage_of_income = bayes.Variable("selected_housing_costs_as_a_percentage_of_income", [household_income, housing_costs, household_type], get_CPI, get_CPI_acceptance)
 
 BN = bayes.BayesianNetwork([household_income, household_type, house_value, property_tax_2015_amount, housing_costs, housing_cost_percentage_of_income])
-
 S = sampling.MetropolisSampler(BN)
 
 population, acceptance_rate = S.generate_population(8848)
+
+def without_outliers(population, variables):
+    pop = {i: population[i] for i in range(len(population))}
+    new_population = pop.keys()
+    for v in variables:
+        z_scores = stats.zscore([x[v] for x in population])
+        for i, z in enumerate(z_scores):
+            if abs(z) > 3.0:
+                print "removing extreme sample ", v, population[i]
+                if i in new_population:
+                    new_population.remove(i)
+    return [pop[i] for i in new_population]
+
+print "current population size:", len(population)
+population = without_outliers(population, ["household_income", "home_value_if_owner"])
+print "new population size:", len(population)
+
 # population, acceptance_rate = S.generate_population(1000)
 print "acceptance rate:", acceptance_rate
 print "total property tax collected (should be about $3.5M):", sum([x["property_tax_amount"] for x in population])
@@ -167,7 +185,7 @@ def update_for_prop_1_and_output(population):
             additional_tax_as_percentage_income = 100 * additional_tax / individual["household_income"]
         n_row = ["no", htype, str(round( individual["selected_housing_costs"]/1000, 3)), str(round(individual["selected_housing_costs_as_a_percentage_of_income"], 2))]
         y_row = ["yes", htype, str(round( (individual["selected_housing_costs"]+additional_tax)/1000, 3)), str(round(individual["selected_housing_costs_as_a_percentage_of_income"] + additional_tax_as_percentage_income, 2))]
-        # print ",".join(n_row)
-        # print ",".join(y_row)
+        print ",".join(n_row)
+        print ",".join(y_row)
 
 update_for_prop_1_and_output(population)
