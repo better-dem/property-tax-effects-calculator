@@ -1,7 +1,7 @@
 # bayes.py
 
 class Variable:
-    def __init__(self, name, parents, gen_function, is_generatable=True, acceptance_probability_function=None):
+    def __init__(self, name, parents, gen_function, acceptance_probability_function):
         """
         If not is_generatable, 
         the gen. function is a proposal distribution
@@ -10,7 +10,6 @@ class Variable:
         self.name = name
         self.parents = parents
         self.gen_function = gen_function
-        self.is_generatable = is_generatable
         self.acceptance_probability_function = acceptance_probability_function
 
 class BayesianNetwork:
